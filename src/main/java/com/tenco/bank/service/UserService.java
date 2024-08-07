@@ -24,7 +24,7 @@ public class UserService {
 		this.userRepository = userRepository;
 	}
 
-	// 트랜잭션 처리
+	// insert 라서 트랜잭션 처리 필요
 	@Transactional
 	public void createUser(SignUpDTO dto) {
 		int result = 0;

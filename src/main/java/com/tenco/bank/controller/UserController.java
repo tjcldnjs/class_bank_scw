@@ -30,7 +30,8 @@ public class UserController {
 		this.session = session;
 	}
 
-	@GetMapping
+	// Get방식 매핑
+	@GetMapping("/sign-up")
 	public String signUpPage() {
 		// application.yml에서 설정
 		// prefix : /WEB-INF/view/
@@ -39,17 +40,17 @@ public class UserController {
 		return "user/signUp";
 	}
 
+	// Post방식 매핑
 	@PostMapping("/sign-up")
 	public String signUpProc(SignUpDTO dto) {
 
+		// 유효성 검사
 		if (dto.getUsername() == null || dto.getUsername().isEmpty()) {
 			throw new DataDeliveryException("username을 입력 하세요", HttpStatus.BAD_REQUEST);
 		}
-
 		if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
 			throw new DataDeliveryException("password를 입력 하세요", HttpStatus.BAD_REQUEST);
 		}
-
 		if (dto.getFullname() == null || dto.getFullname().isEmpty()) {
 			throw new DataDeliveryException("fullname을 입력 하세요", HttpStatus.BAD_REQUEST);
 		}
@@ -62,7 +63,6 @@ public class UserController {
 
 	/**
 	 * 로그인 화면 요청
-	 * 
 	 * @return
 	 */
 	@GetMapping("/sign-in")
@@ -75,7 +75,7 @@ public class UserController {
 	}
 	
 	/**
-	 * 회원가입 요청처리
+	 * 로그인 요청처리
 	 * @return
 	 */
 	@PostMapping("/sign-in")
@@ -84,12 +84,11 @@ public class UserController {
 		if(dto.getUsername() == null || dto.getUsername().isEmpty()) {
 			throw new DataDeliveryException("username을 입력하세요", HttpStatus.BAD_REQUEST);
 		}
-		
 		if(dto.getPassword() == null || dto.getPassword().isEmpty()) {
 			throw new DataDeliveryException("password를 입력하세요", HttpStatus.BAD_REQUEST);
 		}
 		
-		// 서비스 호출
+		// 서비스 호출 - 로그인한사람 principal에 담기
 		User principal = userService.readUser(dto);
 		
 		// 세션 메모리에 등록
@@ -99,6 +98,7 @@ public class UserController {
 		return "redirect:/index";
 	}
 	
+	// 로그아웃
 	@GetMapping("/logout")
 	public String logout() {
 		// invalidate - HTTP 세션을 무효화 (세션의 모든 데이터가 제거되고 세션이 종료)
