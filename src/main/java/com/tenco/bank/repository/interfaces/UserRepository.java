@@ -3,6 +3,7 @@ package com.tenco.bank.repository.interfaces;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.tenco.bank.repository.model.User;
 
@@ -19,5 +20,8 @@ public interface UserRepository {
 	public User findbyId(Integer id);
 	
 	public List<User> findAll();
+	
+	// 매개변수 2개 이상일때 - @Param 어노테이션 사용하기
+	public User findByUsernameAndPassword(@Param("username") String username,@Param("password") String password);
 
 }
