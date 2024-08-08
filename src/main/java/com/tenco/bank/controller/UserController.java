@@ -71,7 +71,7 @@ public class UserController {
 		// prefix : /WEB-INF/view/
 		// user/signUp
 		// suffix : .jsp
-		return "user/singIn";
+		return "user/signIn";
 	}
 	
 	/**
@@ -94,8 +94,7 @@ public class UserController {
 		// 세션 메모리에 등록
 		session.setAttribute("principal", principal);
 		
-		// TODO - 수정예정 (계좌 목록 이동페이지로)
-		return "redirect:/index";
+		return "redirect:/account/list";
 	}
 	
 	// 로그아웃
