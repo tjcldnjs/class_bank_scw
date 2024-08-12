@@ -18,4 +18,6 @@ public interface AccountRepository {
 	// 다중 파라미터를 사용할때, 파라미터의 이름 지정
 	public List<Account> findByUserId(@Param("userId") Integer principalId);
 	public Account findByNumber(@Param("number") String id);
+	
+	public Account finndByAccountId(Integer accountId);
 }

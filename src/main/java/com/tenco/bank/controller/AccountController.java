@@ -1,13 +1,17 @@
 package com.tenco.bank.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.tenco.bank.dto.DepositDTO;
 import com.tenco.bank.dto.SaveDTO;
@@ -16,6 +20,7 @@ import com.tenco.bank.dto.WithdrawalDTO;
 import com.tenco.bank.handler.exception.DataDeliveryException;
 import com.tenco.bank.handler.exception.UnAuthorizedException;
 import com.tenco.bank.repository.model.Account;
+import com.tenco.bank.repository.model.HistoryAccount;
 import com.tenco.bank.repository.model.User;
 import com.tenco.bank.service.AccountService;
 import com.tenco.bank.utils.Define;
@@ -244,6 +249,51 @@ public class AccountController {
 		accountService.updateAccountTransfer(dto,principal.getId());
 		
 		return "redirect:/account/list";
+	}
+	name 이랑 defalutValue 아직 잘 모르겠습니다...    name은 쿼리문뒤에 이름 설정해주는거고 defalutValue는 값을 따로 안넣어 줄때? defalutValue에 넣은 기본값으로 작동 하는건가요 ?
+	
+	@GetMapping("/detail/{accountId}")
+	public String detail(@PathVariable(name = "accountId") Integer accountId,
+				@RequestParam(required = false, name = "type") String type,
+				@RequestParam(name = "page", defaultValue = "1") int page,
+				@RequestParam(name = "size", defaultValue = "2") int size,
+				Model model) {
+		// required = false 일 경우 쿼리스트링 없어도 null 로 반환된다.  true 일 경우 쿼리스트링 없으면 오류 뜬다.
+		
+		// 인증 검사
+		User principal = (User) session.getAttribute(Define.PRINCIPAL);
+		if (principal == null) {
+			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
+		}
+		
+		// 유효성 검사
+		// Arrays.asList - 배열을 리스트로 변환하는 메소드
+		List<String> validTypes = Arrays.asList("all", "deposit", "withdrawal");
+		
+		// 리스트 validTypes 에 type이 포함 안되어있을때 
+		if(!validTypes.contains(type)) {
+			throw new DataDeliveryException("유효하지 않은 접근입니다", HttpStatus.BAD_REQUEST);
+		}
+		
+		// 페이지 개수를 계산하기 위해서 총페이지 수를 계산해주어야 한다.
+		int totalRecords = accountService.countHistoryByAccountIdAndType(type, accountId);
+		// 소수점올림
+		int totalPages = (int) Math.ceil((double)totalRecords / size);
+		
+		// 단일 계좌 조회
+		Account account = accountService.readAccountById(accountId);
+		// 단일 계좌 거래 내역 조회
+		List<HistoryAccount> historyList = accountService.readHistoryByAccountId(type, accountId, page, size);
+		
+		// JSP로 사용할수 있게 보내주기
+		model.addAttribute("account",account);
+		model.addAttribute("historyList",historyList);
+		model.addAttribute("currentPage",page);
+		model.addAttribute("totalPages",totalPages);
+		model.addAttribute("type",type);
+		model.addAttribute("size",size);
+		
+		return "account/detail";
 	}
 	
 }

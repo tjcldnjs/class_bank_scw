@@ -1,5 +1,6 @@
 package com.tenco.bank.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.dao.DataAccessException;
@@ -17,6 +18,7 @@ import com.tenco.bank.repository.interfaces.AccountRepository;
 import com.tenco.bank.repository.interfaces.HistoryRepository;
 import com.tenco.bank.repository.model.Account;
 import com.tenco.bank.repository.model.History;
+import com.tenco.bank.repository.model.HistoryAccount;
 import com.tenco.bank.utils.Define;
 
 @Service
@@ -186,5 +188,37 @@ public class AccountService {
 		if (rowResultCount != 1) {
 			throw new DataDeliveryException(Define.FAILED_PROCESSING, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	/**
+	 * 단일 계좌 조회 기능
+	 * @param accountId
+	 * @return
+	 */
+	public Account readAccountById(Integer accountId) {
+		Account accountEntity = accountRepository.finndByAccountId(accountId);
+		if(accountEntity == null) {
+			throw new DataDeliveryException(Define.NOT_EXIST_ACCOUNT, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return accountEntity;
+	}
+	
+	/**
+	 * 단일 계좌 거래 내역 조회
+	 * @param type 
+	 * @param accountId
+	 * @return 전체, 입금, 출금 거래 내역 반환
+	 */
+	public List<HistoryAccount> readHistoryByAccountId(String type, Integer accountId, int page, int size) {
+		List<HistoryAccount> list = new ArrayList<>();
+		int limit = size;
+		int offset = (page - 1) * size;
+		list = historyRepository.findByAccountIdAndTypeOfHistory(type, accountId, limit, offset);
+		return list;
+	}
+	
+	// type 별 전체, 입금, 출금 내역 개수 구하기
+	public int countHistoryByAccountIdAndType(String type, Integer accountId) {
+		return historyRepository.countByAccountIdAndType(type, accountId);
 	}
 }
