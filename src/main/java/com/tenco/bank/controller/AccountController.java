@@ -1,6 +1,5 @@
 package com.tenco.bank.controller;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.tenco.bank.dto.DepositDTO;
 import com.tenco.bank.dto.SaveDTO;
@@ -45,26 +45,13 @@ public class AccountController {
 	// 계좌 생성 페이지 요청
 	@GetMapping("/save")
 	public String savePage() {
-
-		// 인증검사 필요
-		// UserController 에서 담은 principal
-		User principal = (User) session.getAttribute("principal");
-		if (principal == null) {
-			throw new UnAuthorizedException("인증된 사용자가 아닙니다.", HttpStatus.UNAUTHORIZED);
-		}
 		return "account/save";
 	}
 
 	// 계좌 생성 기능 요청
 	@PostMapping("/save")
-	public String saveProc(SaveDTO dto) {
+	public String saveProc(SaveDTO dto,@SessionAttribute(Define.PRINCIPAL) User principal) {
 		// 1. form 데이터 추출
-
-		// 2. 인증검사
-		User principal = (User) session.getAttribute("principal");
-		if (principal == null) {
-			throw new UnAuthorizedException("인증된 사용자가 아닙니다.", HttpStatus.UNAUTHORIZED);
-		}
 
 		// 3. 유효성 검사
 		if (dto.getNumber() == null || dto.getNumber().isEmpty()) {
@@ -92,12 +79,7 @@ public class AccountController {
 	 */
 	@GetMapping("/list")
 	// Model - jsp에 데이터를 쉽게 넘겨 줄수있다.
-	public String listPage(Model model) {
-		// 인증 검사
-		User principal = (User) session.getAttribute(Define.PRINCIPAL);
-		if (principal == null) {
-			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
-		}
+	public String listPage(Model model,@SessionAttribute(Define.PRINCIPAL) User principal) {
 		// 서비스 호출
 		List<Account> accountList = accountService.readAccountListByUserId(principal.getId());
 
@@ -118,11 +100,6 @@ public class AccountController {
 	 */
 	@GetMapping("/withdrawal")
 	public String withdrawalPage() {
-		// 인증 검사
-		User principal = (User) session.getAttribute(Define.PRINCIPAL);
-		if (principal == null) {
-			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
-		}
 		return "account/withdrawal";
 	}
 
@@ -133,14 +110,7 @@ public class AccountController {
 	 * @return
 	 */
 	@PostMapping("/withdrawal")
-	public String withdrawalProc(WithdrawalDTO dto) {
-
-		// 인증 검사
-		User principal = (User) session.getAttribute(Define.PRINCIPAL);
-		if (principal == null) {
-			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
-		}
-
+	public String withdrawalProc(WithdrawalDTO dto,@SessionAttribute(Define.PRINCIPAL) User principal) {
 		// 유효성 검사
 		if (dto.getAmount() == null) {
 			throw new DataDeliveryException(Define.ENTER_YOUR_BALANCE, HttpStatus.BAD_REQUEST);
@@ -165,11 +135,6 @@ public class AccountController {
 	 */
 	@GetMapping("/deposit")
 	public String depositPage() {
-		// 인증 검사
-		User principal = (User) session.getAttribute(Define.PRINCIPAL);
-		if (principal == null) {
-			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
-		}
 		return "account/deposit";
 	}
 
@@ -180,12 +145,7 @@ public class AccountController {
 	 * @return
 	 */
 	@PostMapping("/deposit")
-	public String depositProc(DepositDTO dto) {
-		// 인증 검사
-		User principal = (User) session.getAttribute(Define.PRINCIPAL);
-		if (principal == null) {
-			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
-		}
+	public String depositProc(DepositDTO dto,@SessionAttribute(Define.PRINCIPAL) User principal) {
 		// 유효성 검사
 		if (dto.getAmount() == null) {
 			throw new DataDeliveryException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.BAD_REQUEST);
@@ -209,11 +169,6 @@ public class AccountController {
 	 */
 	@GetMapping("/transfer")
 	public String transferPage() {
-		// 인증 검사
-		User principal = (User) session.getAttribute(Define.PRINCIPAL);
-		if (principal == null) {
-			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
-		}
 		return "account/transfer";
 	}
 
@@ -223,12 +178,7 @@ public class AccountController {
 	 * @return
 	 */
 	@PostMapping("/transfer")
-	public String transferProc(TransferDTO dto) {
-		// 인증 검사
-		User principal = (User) session.getAttribute(Define.PRINCIPAL);
-		if (principal == null) {
-			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
-		}
+	public String transferProc(TransferDTO dto,@SessionAttribute(Define.PRINCIPAL) User principal) {
 		// 유효성 검사
 		if (dto.getAmount() == null) {
 			throw new DataDeliveryException(Define.ENTER_YOUR_BALANCE, HttpStatus.BAD_REQUEST);
@@ -250,7 +200,6 @@ public class AccountController {
 		
 		return "redirect:/account/list";
 	}
-	name 이랑 defalutValue 아직 잘 모르겠습니다...    name은 쿼리문뒤에 이름 설정해주는거고 defalutValue는 값을 따로 안넣어 줄때? defalutValue에 넣은 기본값으로 작동 하는건가요 ?
 	
 	@GetMapping("/detail/{accountId}")
 	public String detail(@PathVariable(name = "accountId") Integer accountId,
@@ -259,12 +208,6 @@ public class AccountController {
 				@RequestParam(name = "size", defaultValue = "2") int size,
 				Model model) {
 		// required = false 일 경우 쿼리스트링 없어도 null 로 반환된다.  true 일 경우 쿼리스트링 없으면 오류 뜬다.
-		
-		// 인증 검사
-		User principal = (User) session.getAttribute(Define.PRINCIPAL);
-		if (principal == null) {
-			throw new UnAuthorizedException(Define.NOT_AN_AUTHENTICATED_USER, HttpStatus.UNAUTHORIZED);
-		}
 		
 		// 유효성 검사
 		// Arrays.asList - 배열을 리스트로 변환하는 메소드

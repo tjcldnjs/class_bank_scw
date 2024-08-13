@@ -24,4 +24,5 @@ public interface UserRepository {
 	// 매개변수 2개 이상일때 - @Param 어노테이션 사용하기
 	public User findByUsernameAndPassword(@Param("username") String username,@Param("password") String password);
 
+	public User findByUsername(@Param("username") String username);
 }
